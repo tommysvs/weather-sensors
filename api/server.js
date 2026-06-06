@@ -4,11 +4,51 @@ const app = express();
 const PORT = 3000;
 
 const INSTANCE_NAME = process.env.INSTANCE_NAME || "API-DESCONOCIDA";
+const OPEN_METEO_BASE_URL = "https://api.open-meteo.com/v1/forecast";
+const OPEN_METEO_TIMEZONE = "America/Tegucigalpa";
 
-app.use(express.json());
+const CITIES = {
+  tegucigalpa: {
+    name: "Tegucigalpa",
+    latitude: 14.0818,
+    longitude: -87.2068
+  },
+  "san-pedro-sula": {
+    name: "San Pedro Sula",
+    latitude: 15.5042,
+    longitude: -88.025
+  }
+};
 
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+async function getCurrentTemperature(cityConfig) {
+  const params = new URLSearchParams({
+    latitude: String(cityConfig.latitude),
+    longitude: String(cityConfig.longitude),
+    current: "temperature_2m",
+    timezone: OPEN_METEO_TIMEZONE
+  });
+
+  const response = await fetch(`${OPEN_METEO_BASE_URL}?${params.toString()}`);
+
+  if (!response.ok) {
+    throw new Error(`Open-Meteo respondio con status ${response.status}`);
+  }
+
+  const payload = await response.json();
+  const currentData = payload.current;
+
+  if (!currentData || typeof currentData.temperature_2m !== "number") {
+    throw new Error("Open-Meteo no devolvio temperature_2m en current");
+  }
+
+  return {
+    temperature: currentData.temperature_2m,
+    readAt: currentData.time,
+    unit: payload.current_units?.temperature_2m || "C",
+    providerLatitude: payload.latitude,
+    providerLongitude: payload.longitude,
+    timezone: payload.timezone || OPEN_METEO_TIMEZONE
+  };
 }
 
 app.get("/", (req, res) => {
@@ -27,47 +67,51 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-app.get("/api/orders", async (req, res) => {
-  const delayMs = Math.floor(Math.random() * 900) + 100;
+app.get("/api/weather/current", async (req, res) => {
+  const cityKey = String(req.query.city || "").trim().toLowerCase();
+  const cityConfig = CITIES[cityKey];
 
-  await sleep(delayMs);
+  if (!cityConfig) {
+    res.status(400).json({
+      error: "Ciudad invalida. Usa tegucigalpa o san-pedro-sula",
+      instance: INSTANCE_NAME,
+      supportedCities: Object.keys(CITIES),
+      examples: [
+        "?city=tegucigalpa",
+        "?city=san-pedro-sula"
+      ]
+    });
+    return;
+  }
 
-  res.json({
-    endpoint: "/api/orders",
-    instance: INSTANCE_NAME,
-    delayMs,
-    data: [
-      {
-        id: 1,
-        customer: "Ana Lopez",
-        total: 450
-      },
-      {
-        id: 2,
-        customer: "Carlos Perez",
-        total: 1200
-      },
-      {
-        id: 3,
-        customer: "Maria Hernandez",
-        total: 875
-      }
-    ]
-  });
-});
+  try {
+    const weather = await getCurrentTemperature(cityConfig);
 
-app.get("/api/heavy-report", async (req, res) => {
-  const delayMs = 3000;
-
-  await sleep(delayMs);
-
-  res.json({
-    endpoint: "/api/heavy-report",
-    message: "Reporte pesado generado correctamente",
-    instance: INSTANCE_NAME,
-    delayMs,
-    timestamp: new Date().toISOString()
-  });
+    res.json({
+      endpoint: "/api/weather/current",
+      city: cityConfig.name,
+      requestedLatitude: cityConfig.latitude,
+      requestedLongitude: cityConfig.longitude,
+      latitude: weather.providerLatitude,
+      longitude: weather.providerLongitude,
+      temperature: weather.temperature,
+      unit: weather.unit,
+      readAt: weather.readAt,
+      timezone: weather.timezone,
+      source: "Open-Meteo",
+      instance: INSTANCE_NAME,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(502).json({
+      error: "No se pudo obtener la temperatura desde Open-Meteo",
+      details: error.message,
+      city: cityConfig.name,
+      source: "Open-Meteo",
+      instance: INSTANCE_NAME,
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 app.listen(PORT, () => {

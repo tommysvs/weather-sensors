@@ -1,7 +1,7 @@
 {
-  "name": "load-balancer-api-demo",
+  "name": "weather-sensors-api",
   "version": "1.0.0",
-  "description": "API demo para probar Nginx Load Balancer con Docker",
+  "description": "API de sensores climaticos con Nginx Load Balancer y Open-Meteo",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
