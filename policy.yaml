@@ -1,0 +1,10 @@
+on_http_request:
+  - actions:
+      - type: rate-limit
+        config:
+          name: Limit requests per client IP
+          algorithm: sliding_window
+          capacity: 30
+          rate: 60s
+          bucket_key:
+            - 'conn.client_ip'
