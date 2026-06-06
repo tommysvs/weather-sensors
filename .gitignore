@@ -59,8 +59,8 @@ pids/
 .vscode/
 
 # Ignore any exported database or dumps
-*.sql
 *.dump
+*.backup
 
 # Ignore secrets backup files
 secrets.yml
