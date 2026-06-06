@@ -10,6 +10,7 @@ services:
       - api1
       - api2
       - api3
+
   api1:
     build: ./api
     container_name: demo-api-1
@@ -17,6 +18,7 @@ services:
       - INSTANCE_NAME=API-1
     ports:
       - "3001:3000"
+
   api2:
     build: ./api
     container_name: demo-api-2
@@ -24,6 +26,7 @@ services:
       - INSTANCE_NAME=API-2
     ports:
       - "3002:3000"
+
   api3:
     build: ./api
     container_name: demo-api-3
