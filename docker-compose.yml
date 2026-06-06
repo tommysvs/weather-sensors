@@ -1,0 +1,33 @@
+services:
+  load-balancer:
+    image: nginx:1.30.2-alpine
+    container_name: demo-load-balancer
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api1
+      - api2
+      - api3
+  api1:
+    build: ./api
+    container_name: demo-api-1
+    environment:
+      - INSTANCE_NAME=API-1
+    ports:
+      - "3001:3000"
+  api2:
+    build: ./api
+    container_name: demo-api-2
+    environment:
+      - INSTANCE_NAME=API-2
+    ports:
+      - "3002:3000"
+  api3:
+    build: ./api
+    container_name: demo-api-3
+    environment:
+      - INSTANCE_NAME=API-3
+    ports:
+      - "3003:3000"

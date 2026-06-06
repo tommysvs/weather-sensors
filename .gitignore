@@ -1,0 +1,67 @@
+# Environment variables
+.env
+.env.*
+.env.local
+.env.production
+.env.test
+
+# Logs
+logs/
+*.log
+debug.log
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Build outputs
+dist/
+build/
+
+# Docker
+docker-compose.override.yml
+.env.docker
+
+# Certificates and private keys
+*.pem
+*.key
+id_rsa
+id_rsa.pub
+
+# OS generated files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# Editor directories and files
+.vscode/
+.idea/
+.vs/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Misc
+*.tmp
+*.temp
+*.swp
+
+# Test artifacts
+*.seed
+*.pid
+pids/
+
+# Optional: specific ignores
+# (Node-related ignores removed per user request)
+
+# Ignore local VS settings
+.vscode/
+
+# Ignore any exported database or dumps
+*.sql
+*.dump
+
+# Ignore secrets backup files
+secrets.yml
+secrets.json
