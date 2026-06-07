@@ -4,7 +4,7 @@ on_http_request:
         config:
           name: Limit requests per client IP
           algorithm: sliding_window
-          capacity: 30
+          capacity: 100
           rate: 60s
           bucket_key:
             - 'conn.client_ip'
